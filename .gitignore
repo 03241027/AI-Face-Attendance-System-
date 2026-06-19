@@ -1,0 +1,111 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+.settings/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+attendance.db
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Attendance Records
+attendance.csv
+*.csv.bak
+
+# Generated Files
+trainer.yml
+student_ids.txt
+*.pkl
+*.pickle
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build & Distribution
+build/
+dist/
+*.egg-info/
+
+# Backup Files
+*.bak
+*.backup
+*~
+.#*
+
+# Photos (optional - keep if needed for version control)
+# photos/
+# photos/**/*.jpg
+# photos/**/*.jpeg
+# photos/**/*.png
+
+# Archives
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# IDE-specific files
+.vscode/settings.json
+.idea/workspace.xml
+
+# Cache
+*.cache
+.cache/

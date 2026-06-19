@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">Student Directory</div>
+      <p class="page-sub">Unique students and recent attendance details</p>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="location.href='{{ url_for('mark_attendance') }}'">Mark Attendance</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Last Seen</th>
+          <th>Total Records</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if students %}
+          {% for student in students %}
+          <tr>
+            <td>{{ student.id }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.last_seen }}</td>
+            <td>{{ student.records }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4" style="text-align:center;color:var(--text-secondary);">No student records available.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

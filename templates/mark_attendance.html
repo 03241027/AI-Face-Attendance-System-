@@ -1,0 +1,84 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h3 class="card-title">Manual Attendance</h3>
+        <p class="stat-label">Quickly mark a student present.</p>
+      </div>
+    </div>
+    <form id="manualForm">
+      <div class="auth-field">
+        <label for="student_id">Student ID</label>
+        <input type="text" id="student_id" name="student_id" placeholder="Student ID" required />
+      </div>
+      <div class="auth-field">
+        <label for="student_name">Student Name</label>
+        <input type="text" id="student_name" name="student_name" placeholder="Student Name" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Mark Attendance</button>
+    </form>
+    <div id="message" class="message-box" style="display:none; margin-top: 16px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h3 class="card-title">Face Recognition</h3>
+        <p class="stat-label">Use face recognition to capture attendance.</p>
+      </div>
+    </div>
+    <p class="stat-label" style="margin-bottom: 18px;">Open the recognition test in a new tab and allow camera access for automatic attendance marking.</p>
+    <button class="btn btn-primary" onclick="window.open('{{ url_for('test_recognition_page') }}', '_blank')" style="width: 100%; margin-bottom: 10px;">
+      <i class="ti ti-camera" aria-hidden="true"></i> Open Recognition
+    </button>
+    <button class="btn btn-outline" onclick="window.location.href='{{ url_for('dashboard') }}'" style="width: 100%;">
+      <i class="ti ti-arrow-left" aria-hidden="true"></i> Return to Dashboard
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const messageBox = document.getElementById('message');
+
+  document.getElementById('manualForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append('student_id', document.getElementById('student_id').value);
+    formData.append('student_name', document.getElementById('student_name').value);
+    formData.append('date', new Date().toISOString().split('T')[0]);
+    formData.append('time', new Date().toLocaleTimeString());
+
+    try {
+      const response = await fetch('{{ url_for('mark_attendance') }}', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        showMessage(result.message, 'success');
+        document.getElementById('manualForm').reset();
+      } else {
+        showMessage(result.error || 'Error marking attendance', 'error');
+      }
+    } catch (error) {
+      showMessage('Error marking attendance', 'error');
+    }
+  });
+
+  function showMessage(message, type) {
+    messageBox.textContent = message;
+    messageBox.className = `message-box ${type}`;
+    messageBox.style.display = 'block';
+    setTimeout(() => {
+      messageBox.style.display = 'none';
+    }, 3200);
+  }
+</script>
+{% endblock %}

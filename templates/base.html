@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ title or 'AttendAI — Smart Attendance System' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+</head>
+<body class="light-mode">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">
+        <div class="logo-icon">
+          <i class="ti ti-brain" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="logo-text">AttendAI</div>
+          <div class="logo-sub">Smart Attendance</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Main</span>
+        <a class="nav-item {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+          <div class="nav-label-wrap">
+            <i class="ti ti-layout-dashboard" aria-hidden="true"></i>
+            <span>Dashboard</span>
+          </div>
+          <span class="nav-key">Alt+D</span>
+        </a>
+        <a class="nav-item {% if active_page == 'mark_attendance' %}active{% endif %}" href="{{ url_for('mark_attendance') }}">
+          <div class="nav-label-wrap">
+            <i class="ti ti-calendar-check" aria-hidden="true"></i>
+            <span>Attendance</span>
+          </div>
+          <span class="nav-key">Alt+A</span>
+        </a>
+        <a class="nav-item {% if active_page == 'records' %}active{% endif %}" href="{{ url_for('records') }}">
+          <div class="nav-label-wrap">
+            <i class="ti ti-report-gantt" aria-hidden="true"></i>
+            <span>Records</span>
+          </div>
+          <span class="nav-key">Alt+R</span>
+        </a>
+        <a class="nav-item {% if active_page == 'face_recognition' %}active{% endif %}" href="{{ url_for('test_recognition_page') }}">
+          <div class="nav-label-wrap">
+            <i class="ti ti-camera" aria-hidden="true"></i>
+            <span>Face Recognition</span>
+          </div>
+          <span class="nav-key">Alt+F</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="nav-item" href="{{ url_for('logout') }}">
+        <i class="ti ti-logout" aria-hidden="true"></i>
+        Logout
+      </a>
+      <div class="sidebar-user">
+        <div class="user-avatar">{{ user[:2].upper() if user else 'AI' }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user or 'Guest' }}</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="ti ti-menu-2" aria-hidden="true"></i>
+      </button>
+
+      <div class="topbar-left">
+        <h1 class="page-title" id="page-title">{{ page_title }}</h1>
+        <p class="page-sub">{{ page_sub or 'Live monitoring — updated in real-time' }}</p>
+      </div>
+
+      <div class="topbar-right">
+        <div class="mode-toggle" role="group" aria-label="Theme toggle">
+          <button class="mode-btn active" id="btn-dark" onclick="setMode('dark')" title="Dark mode" aria-pressed="true">
+            <i class="ti ti-moon"></i>
+          </button>
+          <button class="mode-btn" id="btn-light" onclick="setMode('light')" title="Light mode" aria-pressed="false">
+            <i class="ti ti-sun"></i>
+          </button>
+        </div>
+        <button class="icon-btn" aria-label="Notifications">
+          <i class="ti ti-bell" aria-hidden="true"></i>
+        </button>
+        <button class="icon-btn" aria-label="Search">
+          <i class="ti ti-search" aria-hidden="true"></i>
+        </button>
+        <a class="topbar-avatar" href="{{ url_for('logout') }}" title="Logout">{{ user[:2].upper() if user else 'AI' }}</a>
+      </div>
+    </header>
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

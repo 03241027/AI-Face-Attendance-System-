@@ -1,0 +1,584 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .recognition-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .camera-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .video-wrapper {
+    position: relative;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .status-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e74c3c;
+    animation: pulse 1.5s infinite;
+  }
+
+  .status-dot.active {
+    background: #27ae60;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .status-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #3498db;
+  }
+
+  .status-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-message {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .recognition-result {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .recognition-result.success {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.08);
+  }
+
+  .recognition-result.warning {
+    border-color: #f39c12;
+    background: rgba(243, 156, 18, 0.08);
+  }
+
+  .recognition-result.empty {
+    border-color: var(--border-color);
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  .student-info {
+    text-align: center;
+  }
+
+  .student-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .student-id {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+  }
+
+  .confidence-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .confidence-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+
+  .btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .btn-group.full {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmation-count {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .recognition-container {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-group {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="recognition-container">
+  <!-- Camera Panel -->
+  <div class="camera-panel">
+    <div class="card" style="margin: 0;">
+      <div class="card-head">
+        <h3 class="card-title">Live Camera Feed</h3>
+        <p class="stat-label">Face recognition in progress</p>
+      </div>
+      
+      <div class="video-wrapper" id="videoContainer">
+        <video id="videoFeed" autoplay muted playsinline></video>
+        <img id="capturedPreview" alt="Captured face preview" />
+        <div class="status-indicator">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="streamStatus">Standby</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <!-- Status Section -->
+    <div class="status-section">
+      <div class="status-title">System Status</div>
+      <p class="status-message" id="status">🔄 Initializing camera...</p>
+    </div>
+
+    <!-- Recognition Result -->
+    <div class="recognition-result empty" id="resultBox">
+      <div style="color: var(--text-secondary); padding: 1rem; text-align: center;">
+        <p style="margin: 0;">No face recognized yet</p>
+        <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0;">Click "Start Recognition" to begin</p>
+      </div>
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="btn-group full">
+      <button class="btn btn-primary" id="startBtn" onclick="startRecognition()" style="width: 100%;">
+        <i class="ti ti-camera"></i> Start Recognition
+      </button>
+      <button class="btn btn-outline" id="stopBtn" onclick="stopRecognition()" style="display:none; width: 100%;">
+        <i class="ti ti-player-stop"></i> Stop Recognition
+      </button>
+    </div>
+
+    <input type="file" id="phoneCaptureInput" accept="image/*" capture="user" style="display:none;" />
+    <button class="btn btn-primary" id="phoneCaptureBtn" onclick="openPhoneCamera()" style="display:none; width: 100%;">
+      <i class="ti ti-camera-plus"></i> Take Phone Photo
+    </button>
+
+    <button class="btn btn-success" id="markBtn" onclick="markAttendance()" style="display:none; width: 100%;">
+      <i class="ti ti-check"></i> Mark Attendance
+    </button>
+
+    <!-- Info Box -->
+    <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); border-left: 4px solid #3498db;">
+      <strong>💡 Tips for best results:</strong>
+      <ul style="margin: 0.5rem 0 0 0; padding-left: 1.2rem;">
+        <li>Ensure good lighting</li>
+        <li>Face the camera directly</li>
+        <li>Keep a neutral expression</li>
+        <li>Avoid wearing sunglasses</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const video = document.getElementById('videoFeed');
+  const capturedPreview = document.getElementById('capturedPreview');
+  const statusElement = document.getElementById('status');
+  const resultBox = document.getElementById('resultBox');
+  const streamStatus = document.getElementById('streamStatus');
+  const statusDot = document.getElementById('statusDot');
+  const startBtn = document.getElementById('startBtn');
+  const phoneCaptureBtn = document.getElementById('phoneCaptureBtn');
+  const phoneCaptureInput = document.getElementById('phoneCaptureInput');
+  
+  let stream = null;
+  let recognitionInterval = null;
+  let currentStudent = null;
+  let lastCandidate = null;
+  let consecutiveMatches = 0;
+  let isRecognitionActive = false;
+  
+  const REQUIRED_CONSECUTIVE = 3;
+  const CONFIDENCE_THRESHOLD = 60;
+
+  async function startCamera() {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        enablePhoneCaptureMode();
+        return false;
+      }
+      
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        },
+        audio: false 
+      });
+      
+      video.srcObject = stream;
+      video.style.display = 'block';
+      capturedPreview.style.display = 'none';
+      
+      // Wait for video to load
+      video.onloadedmetadata = () => {
+        updateStatus('✅ Camera ready. Click "Start Recognition"', '#27ae60');
+        startBtn.disabled = false;
+      };
+      
+      return true;
+      
+    } catch (err) {
+      let errorMsg = '❌ Camera Error: ' + err.message;
+      
+      if (err.name === 'NotAllowedError') {
+        errorMsg = '❌ Camera Permission Denied. Please allow camera access and refresh.';
+      } else if (err.name === 'NotFoundError') {
+        errorMsg = '❌ No camera found. Check if it\'s connected.';
+      } else if (err.name === 'NotSupportedError' || err.message.includes('not supported')) {
+        errorMsg = '❌ Browser Not Supported. Use Chrome, Firefox, or Edge.';
+      } else if (err.name === 'NotReadableError') {
+        errorMsg = '❌ Camera in use. Close other apps and try again.';
+      }
+      
+      updateStatus(errorMsg, '#e74c3c');
+      startBtn.disabled = true;
+      console.error('Camera Error:', err);
+      return false;
+    }
+  }
+
+  function enablePhoneCaptureMode() {
+    stopRecognition();
+    startBtn.style.display = 'none';
+    phoneCaptureBtn.style.display = 'inline-block';
+    streamStatus.textContent = 'Photo';
+    statusDot.classList.remove('active');
+    updateStatus('📱 Phone camera needs a photo capture on this address. Tap "Take Phone Photo".', '#f39c12');
+  }
+
+  function updateStatus(message, color = '#3498db') {
+    statusElement.textContent = message;
+    statusElement.style.color = color || '#3498db';
+  }
+
+  function displayResult(student, confidence, isConfirmed = false) {
+    if (!student) {
+      resultBox.innerHTML = `
+        <div style="color: var(--text-secondary); padding: 1rem; text-align: center;">
+          <p style="margin: 0;">No face recognized</p>
+        </div>
+      `;
+      resultBox.className = 'recognition-result empty';
+      return;
+    }
+
+    const confPercent = Math.round(confidence);
+    const confColor = confPercent >= 80 ? '#27ae60' : confPercent >= 60 ? '#f39c12' : '#e74c3c';
+    
+    let html = `
+      <div class="student-info">
+        <p class="student-name">${student.student_name}</p>
+        <p class="student-id">ID: ${student.student_id}</p>
+    `;
+
+    if (!isConfirmed) {
+      html += `
+        <p style="color: #f39c12; font-size: 0.9rem; margin: 0.5rem 0;">
+          Confirming identity <span class="confirmation-count">${consecutiveMatches}/${REQUIRED_CONSECUTIVE}</span>
+        </p>
+      `;
+    }
+
+    html += `
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width: ${confPercent}%; background: ${confColor};"></div>
+        </div>
+        <div class="confidence-label">
+          <span>Confidence</span>
+          <strong style="color: ${confColor};">${confPercent}%</strong>
+        </div>
+      </div>
+    `;
+
+    resultBox.innerHTML = html;
+    resultBox.className = `recognition-result ${isConfirmed ? 'success' : 'warning'}`;
+  }
+
+  async function captureAndRecognize() {
+    if (!video.srcObject) return;
+    
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/jpeg', 0.85);
+
+      const response = await fetch('{{ url_for('recognize_face_api') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      });
+
+      const result = await response.json();
+      handleRecognitionResult(result);
+    } catch (err) {
+      console.error('Recognition error:', err);
+      updateStatus('⚠️ Recognition error. Please check console.', '#e74c3c');
+    }
+  }
+
+  function handleRecognitionResult(result, forceConfirm = false) {
+    if (result.recognized) {
+      const confidence = result.confidence || 0;
+      
+      if (lastCandidate === result.student_id) {
+        consecutiveMatches += 1;
+      } else {
+        lastCandidate = result.student_id;
+        consecutiveMatches = 1;
+      }
+
+      if (forceConfirm) {
+        consecutiveMatches = REQUIRED_CONSECUTIVE;
+      }
+
+      displayResult(result, confidence, consecutiveMatches >= REQUIRED_CONSECUTIVE);
+
+      if (consecutiveMatches >= REQUIRED_CONSECUTIVE) {
+        currentStudent = result;
+        document.getElementById('markBtn').style.display = 'inline-block';
+        updateStatus('✅ Student confirmed! Ready to mark attendance.', '#27ae60');
+      } else {
+        updateStatus(`Confirming identity (${consecutiveMatches}/${REQUIRED_CONSECUTIVE})...`, '#f39c12');
+      }
+    } else {
+      currentStudent = null;
+      lastCandidate = null;
+      consecutiveMatches = 0;
+      displayResult(null);
+      document.getElementById('markBtn').style.display = 'none';
+      updateStatus('No face recognized. Try another photo with good light.', '#95a5a6');
+    }
+  }
+
+  function openPhoneCamera() {
+    phoneCaptureInput.click();
+  }
+
+  phoneCaptureInput.addEventListener('change', async () => {
+    const file = phoneCaptureInput.files && phoneCaptureInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const imageData = reader.result;
+      capturedPreview.src = imageData;
+      capturedPreview.style.display = 'block';
+      video.style.display = 'none';
+      updateStatus('🔎 Checking captured photo...', '#3498db');
+
+      try {
+        const response = await fetch('{{ url_for('recognize_face_api') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageData })
+        });
+
+        const result = await response.json();
+        handleRecognitionResult(result, true);
+      } catch (err) {
+        console.error('Recognition error:', err);
+        updateStatus('⚠️ Recognition error. Please try another photo.', '#e74c3c');
+      } finally {
+        phoneCaptureInput.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function startRecognition() {
+    if (!video.srcObject) {
+      enablePhoneCaptureMode();
+      return;
+    }
+
+    if (recognitionInterval) clearInterval(recognitionInterval);
+    
+    isRecognitionActive = true;
+    statusDot.classList.add('active');
+    streamStatus.textContent = 'Active';
+    
+    recognitionInterval = setInterval(captureAndRecognize, 1200);
+    
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-block';
+    updateStatus('🔴 Recognition active - face the camera', '#27ae60');
+  }
+
+  function stopRecognition() {
+    if (recognitionInterval) {
+      clearInterval(recognitionInterval);
+      recognitionInterval = null;
+    }
+    
+    isRecognitionActive = false;
+    statusDot.classList.remove('active');
+    streamStatus.textContent = 'Standby';
+    
+    document.getElementById('startBtn').style.display = 'inline-block';
+    document.getElementById('stopBtn').style.display = 'none';
+    document.getElementById('markBtn').style.display = 'none';
+    
+    currentStudent = null;
+    lastCandidate = null;
+    consecutiveMatches = 0;
+    
+    displayResult(null);
+    updateStatus('⏸️ Recognition stopped', '#95a5a6');
+  }
+
+  async function markAttendance() {
+    if (!currentStudent) {
+      alert('No student recognized yet.');
+      return;
+    }
+
+    const markBtn = document.getElementById('markBtn');
+    markBtn.disabled = true;
+    markBtn.textContent = '⏳ Marking...';
+
+    const formData = new FormData();
+    formData.append('student_id', currentStudent.student_id);
+    formData.append('student_name', currentStudent.student_name);
+
+    try {
+      const response = await fetch('{{ url_for('mark_attendance') }}', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        updateStatus(`✅ Attendance marked for ${currentStudent.student_name}!`, '#27ae60');
+        markBtn.textContent = '✅ Marked!';
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+          stopRecognition();
+          markBtn.disabled = false;
+          markBtn.textContent = 'Mark Attendance';
+        }, 2000);
+      } else {
+        alert('Error: ' + (result.error || 'Unknown error'));
+        markBtn.disabled = false;
+        markBtn.textContent = 'Mark Attendance';
+      }
+    } catch (err) {
+      console.error('Error marking attendance:', err);
+      alert('Unable to mark attendance. Please try again.');
+      markBtn.disabled = false;
+      markBtn.textContent = 'Mark Attendance';
+    }
+  }
+
+  // Initialize camera on page load
+  document.addEventListener('DOMContentLoaded', startCamera);
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    stopRecognition();
+  });
+</script>
+{% endblock %}

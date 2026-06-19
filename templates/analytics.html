@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="analytics-hero">
+  <div class="hero-panel">
+    <span class="hero-pill">Campus Analytics</span>
+    <h3>Attendance insights for every student and class.</h3>
+    <p>See attendance patterns, confidence trends, and attendance growth through a clean visual dashboard designed for educators and administrators.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value">{{ stats.today_present or 0 }}</div>
+        <div class="hero-stat-label">Present Today</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">{{ stats.unique_students or 0 }}</div>
+        <div class="hero-stat-label">Unique Students</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=80" alt="University students collaborating in class" />
+  </div>
+</section>
+
+<section class="stat-row" aria-label="Analytics summary">
+  <div class="stat-card">
+    <div class="stat-head">
+      <div class="stat-icon"><i class="ti ti-chart-line"></i></div>
+      <div class="stat-trend up">+8%</div>
+    </div>
+    <div class="stat-val">{{ stats.total_records or 0 }}</div>
+    <div class="stat-label">Total Attendance Records</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head">
+      <div class="stat-icon green"><i class="ti ti-user-check"></i></div>
+      <div class="stat-trend warn">+3%</div>
+    </div>
+    <div class="stat-val">{{ stats.today_present or 0 }}</div>
+    <div class="stat-label">Present Today</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head">
+      <div class="stat-icon amber"><i class="ti ti-clock"></i></div>
+      <div class="stat-trend down">-1%</div>
+    </div>
+    <div class="stat-val">{{ stats.unique_students or 0 }}</div>
+    <div class="stat-label">Unique Students</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-head">
+      <div class="stat-icon red"><i class="ti ti-alert-circle" aria-hidden="true"></i></div>
+      <div class="stat-trend down">-2%</div>
+    </div>
+    <div class="stat-val">{{ low_confidence or 0 }}%</div>
+    <div class="stat-label">Low Confidence Cases</div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">Attendance Insights</div>
+      <div class="card-sub">Quick overview of today's attendance and behavior.</div>
+    </div>
+  </div>
+  <div class="bar-chart">
+    <div class="bar-wrap">
+      <div class="bar" style="height: 120px;"><div class="mini-prog" style="height:100%;width:85%;background:var(--accent);"></div></div>
+      <div class="bar-day">Mon</div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar" style="height: 120px;"><div class="mini-prog" style="height:100%;width:95%;background:var(--success);"></div></div>
+      <div class="bar-day">Tue</div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar" style="height: 120px;"><div class="mini-prog" style="height:100%;width:80%;background:var(--warning);"></div></div>
+      <div class="bar-day">Wed</div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar" style="height: 120px;"><div class="mini-prog" style="height:100%;width:92%;background:var(--accent);"></div></div>
+      <div class="bar-day">Thu</div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar" style="height: 120px;"><div class="mini-prog" style="height:100%;width:88%;background:var(--info);"></div></div>
+      <div class="bar-day">Fri</div>
+    </div>
+  </div>
+</section>
+{% endblock %}

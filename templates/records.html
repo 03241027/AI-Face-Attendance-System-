@@ -1,0 +1,257 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <h3 class="card-title">Attendance Records</h3>
+      <p class="stat-label">Search, sort, and export attendance history.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-danger btn-sm" id="deleteSelected" disabled>Delete Selected</button>
+      <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>
+  <div class="card search-bar">
+    <span class="search-icon" aria-hidden="true"></span>
+    <input id="search" type="text" placeholder="Search by ID, name, date, status, or method..." aria-label="Search attendance records" />
+    <button type="button" id="clearSearch" class="search-clear" aria-label="Clear search">×</button>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" id="recordsTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Student ID</th>
+          <th onclick="sortTable(1)">Student Name</th>
+          <th onclick="sortTable(2)">Date</th>
+          <th onclick="sortTable(3)">Time</th>
+          <th onclick="sortTable(4)">Status</th>
+          <th onclick="sortTable(5)">Method</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="6" style="text-align:center;">Loading records...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let records = [];
+  let activeRowIndex = null;
+  const searchInput = document.getElementById('search');
+  const clearSearchBtn = document.getElementById('clearSearch');
+  const deleteSelectedBtn = document.getElementById('deleteSelected');
+  const tableBody = document.getElementById('tableBody');
+
+  fetch('{{ url_for('get_attendance') }}')
+    .then((res) => res.json())
+    .then((data) => {
+      records = data.map((record, index) => ({ ...record, _rowIndex: index }));
+      displayRecords(records);
+    })
+    .catch(() => {
+      tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No records found</td></tr>';
+    });
+
+  function displayRecords(data) {
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No attendance records found</td></tr>';
+      activeRowIndex = null;
+      updateDeleteButton();
+      return;
+    }
+
+    tableBody.innerHTML = data
+      .map((record) => {
+        const rowClass = record._rowIndex === activeRowIndex ? 'selected-row' : '';
+        return `
+        <tr tabindex="0" data-index="${record._rowIndex}" class="${rowClass}">
+          <td>${record['Student ID'] || ''}</td>
+          <td>${record['Student Name'] || ''}</td>
+          <td>${record['Date'] || ''}</td>
+          <td>${record['Time'] || ''}</td>
+          <td>${record['Status'] || 'Present'}</td>
+          <td>${record['Method'] || 'Manual'}</td>
+        </tr>
+      `;
+      })
+      .join('');
+
+    attachRowListeners();
+    if (!tableBody.querySelector(`tr[data-index="${activeRowIndex}"]`)) {
+      activeRowIndex = null;
+    }
+    updateDeleteButton();
+  }
+
+  function attachRowListeners() {
+    tableBody.querySelectorAll('tr[data-index]').forEach((row) => {
+      row.addEventListener('click', () => selectRow(Number(row.dataset.index)));
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectRow(Number(row.dataset.index));
+        }
+      });
+    });
+  }
+
+  function selectRow(index) {
+    activeRowIndex = index;
+    tableBody.querySelectorAll('.selected-row').forEach((el) => el.classList.remove('selected-row'));
+    const selectedRow = tableBody.querySelector(`tr[data-index="${index}"]`);
+    if (selectedRow) {
+      selectedRow.classList.add('selected-row');
+      selectedRow.focus();
+    }
+    updateDeleteButton();
+  }
+
+  function updateDeleteButton() {
+    deleteSelectedBtn.disabled = activeRowIndex === null;
+  }
+
+  function getSearchMatches(record, value) {
+    const fields = ['Student ID', 'Student Name', 'Date', 'Time', 'Status', 'Method'];
+    return fields.some((key) => (record[key] || '').toLowerCase().includes(value));
+  }
+
+  function updateSearchResults() {
+    const value = searchInput.value.trim().toLowerCase();
+    if (!value) {
+      displayRecords(records);
+      clearSearchBtn.style.opacity = '0';
+      clearSearchBtn.style.pointerEvents = 'none';
+      return;
+    }
+    clearSearchBtn.style.opacity = '1';
+    clearSearchBtn.style.pointerEvents = 'auto';
+
+    const filtered = records.filter((record) => getSearchMatches(record, value));
+    displayRecords(filtered);
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    updateSearchResults();
+    searchInput.focus();
+  }
+
+  function deleteSelectedRecord() {
+    if (activeRowIndex === null) return;
+
+    if (!confirm('Delete the selected attendance record?')) {
+      return;
+    }
+
+    fetch(`/api/attendance/delete/${activeRowIndex}`, {
+      method: 'DELETE'
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          records = records.filter((record) => record._rowIndex !== activeRowIndex);
+          records = records.map((record, index) => ({ ...record, _rowIndex: index }));
+          activeRowIndex = null;
+          updateSearchResults();
+        } else {
+          alert(result.error || 'Unable to delete record.');
+        }
+      })
+      .catch(() => {
+        alert('Unable to delete record.');
+      });
+  }
+
+  searchInput.addEventListener('input', updateSearchResults);
+  clearSearchBtn.addEventListener('click', clearSearch);
+  deleteSelectedBtn.addEventListener('click', deleteSelectedRecord);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      clearSearch();
+      return;
+    }
+
+    const targetTag = document.activeElement.tagName;
+    if (targetTag === 'INPUT' || targetTag === 'TEXTAREA') return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveSelection(1);
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveSelection(-1);
+    }
+
+    if (event.key === 'Delete') {
+      event.preventDefault();
+      deleteSelectedRecord();
+    }
+  });
+
+  function moveSelection(direction) {
+    const rows = Array.from(tableBody.querySelectorAll('tr[data-index]'));
+    if (!rows.length) return;
+
+    let current = rows.findIndex((row) => Number(row.dataset.index) === activeRowIndex);
+    if (current === -1) {
+      current = direction > 0 ? -1 : 0;
+    }
+
+    let next = current + direction;
+    if (next < 0) next = 0;
+    if (next >= rows.length) next = rows.length - 1;
+
+    selectRow(Number(rows[next].dataset.index));
+  }
+
+  let sortColumn = -1;
+  let sortDirection = 1;
+
+  function sortTable(column) {
+    if (sortColumn === column) {
+      sortDirection *= -1;
+    } else {
+      sortColumn = column;
+      sortDirection = 1;
+    }
+
+    const keys = ['Student ID', 'Student Name', 'Date', 'Time', 'Status', 'Method'];
+    const sorted = [...records].sort((a, b) => {
+      const aVal = (a[keys[column]] || '').toString();
+      const bVal = (b[keys[column]] || '').toString();
+      return sortDirection * aVal.localeCompare(bVal);
+    });
+    displayRecords(sorted);
+  }
+
+  function exportCSV() {
+    if (!records || records.length === 0) {
+      alert('No records to export');
+      return;
+    }
+
+    const headers = ['Student ID', 'Student Name', 'Date', 'Time', 'Status', 'Method'];
+    const csvRows = [headers.join(',')];
+
+    for (const record of records) {
+      const values = headers.map((header) => `"${(record[header] || '').replace(/"/g, '""')}"`);
+      csvRows.push(values.join(','));
+    }
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+================================================================================
+            ⚠️  INVALID FILENAME FORMAT - QUICK FIX
+================================================================================
+
+YOUR ISSUE:
+  Files: Mahara.jpeg, Sajitha.jpeg
+  Error: ⚠️ Invalid filename format
+  
+  Expected: ID_StudentName_number.extension
+  Got: StudentName.extension (missing ID and number)
+
+================================================================================
+                        ⚡ FASTEST FIX (1 MINUTE)
+================================================================================
+
+RUN THIS COMMAND:
+
+  python fix_filenames.py
+
+OR:
+
+  python rename_photos.py
+
+This will:
+  1. Find all invalid filenames
+  2. Assign them new Student IDs (26, 27, etc.)
+  3. Rename them to correct format
+  4. You confirm before renaming
+
+Examples of what it does:
+  Mahara.jpeg      → 26_Mahara_1.jpeg
+  Sajitha.jpeg     → 27_Sajitha_1.jpeg
+
+================================================================================
+                        📝 EXPECTED FORMAT
+================================================================================
+
+CORRECT FORMAT:
+  ID_StudentName_number.extension
+  
+EXAMPLES:
+  ✅ 1_John_1.jpg
+  ✅ 2_Sarah_5.jpeg
+  ✅ 26_Mahara_1.jpg
+  ✅ 27_Sajitha_3.png
+
+WRONG FORMAT (what you have):
+  ❌ Mahara.jpeg (missing ID and number)
+  ❌ Sajitha.jpeg (missing ID and number)
+  ❌ student.jpg (no separators)
+  ❌ 1_John.jpg (missing number at end)
+
+================================================================================
+                        🔧 HOW TO FIX
+================================================================================
+
+STEP 1: Run auto-fixer
+  python fix_filenames.py
+
+STEP 2: Review the changes
+  Shows old → new names
+
+STEP 3: Confirm
+  Type: yes
+
+STEP 4: Done!
+  Files automatically renamed
+
+STEP 5: Retrain model
+  python train_model.py
+
+================================================================================
+                    ✅ YOUR CURRENT STATUS
+================================================================================
+
+✅ Loaded: 6025 images (good!)
+✅ Students: 25 (good!)
+⚠️  Issues: 2 files with invalid names (Mahara, Sajitha)
+
+After fix:
+✅ Will load: 6025+ images (all valid)
+✅ Will train: 4525+ images
+✅ Will test: 1500+ images
+
+================================================================================
+                        🚀 QUICK STEPS
+================================================================================
+
+1. Run:  python fix_filenames.py
+
+2. Review changes - type "yes"
+
+3. Run:  python train_model.py
+
+4. Done! ✅
+
+Time: 2 minutes
+
+================================================================================
+
+Your system is working well! Just need to fix these 2 file names.
+
+RUN: python fix_filenames.py
+
+================================================================================

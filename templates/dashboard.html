@@ -1,0 +1,156 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="stat-head">
+      <div>
+        <div class="stat-val">{{ stats.total_records or 0 }}</div>
+        <div class="stat-label">Total Records</div>
+      </div>
+      <div class="stat-icon">
+        <i class="ti ti-files" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="stat-trend up">From attendance.csv</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-head">
+      <div>
+        <div class="stat-val">{{ stats.today_present or 0 }}</div>
+        <div class="stat-label">Present Today</div>
+      </div>
+      <div class="stat-icon">
+        <i class="ti ti-user-check" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="stat-trend up">Marked today</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-head">
+      <div>
+        <div class="stat-val">{{ stats.unique_students or 0 }}</div>
+        <div class="stat-label">Unique Students</div>
+      </div>
+      <div class="stat-icon">
+        <i class="ti ti-users" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="stat-trend">Unique IDs</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-head">
+      <div>
+        <div class="stat-val">{{ ((stats.today_present or 0) / (stats.unique_students or 1) * 100) | int }}%</div>
+        <div class="stat-label">Attendance Rate</div>
+      </div>
+      <div class="stat-icon">
+        <i class="ti ti-percentage" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="stat-trend up">Today / students</div>
+  </div>
+</div>
+
+<div class="dashboard-hero">
+  <div class="hero-welcome">
+    <div class="hero-pill">Welcome Back</div>
+    <h3 class="dashboard-title">Hello, {{ user or 'Administrator' }}</h3>
+    <p class="dashboard-copy">
+      Track and manage student attendance efficiently with face recognition technology. Your system is fully operational and ready to use.
+    </p>
+    <div class="dashboard-visual">
+      <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" alt="Students working in a modern classroom" />
+    </div>
+    <div class="hero-stats-dashboard">
+      <div class="hero-stat">
+        <div class="stat-val stat-val-sm">{{ stats.total_records or 0 }}</div>
+        <div class="hero-stat-label">Total Attendance Records</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-val stat-val-sm">{{ stats.unique_students or 0 }}</div>
+        <div class="hero-stat-label">Students in System</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-val stat-val-sm status-check">Active</div>
+        <div class="hero-stat-label">System Status: Active</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-overview">
+    <div class="summary-head">
+      <h3>Quick Actions</h3>
+      <p>Access frequently used features</p>
+    </div>
+    <div class="summary-list">
+      <a href="{{ url_for('mark_attendance') }}" class="summary-item action-card">
+        <div class="summary-main">
+          <div class="action-icon action-icon-primary">
+            <i class="ti ti-camera-check" aria-hidden="true"></i>
+          </div>
+          <div class="summary-copy">
+            <strong>Mark Attendance</strong>
+            <div>Manual or face recognition</div>
+          </div>
+        </div>
+        <i class="ti ti-chevron-right summary-arrow" aria-hidden="true"></i>
+      </a>
+      
+      <a href="{{ url_for('records') }}" class="summary-item action-card">
+        <div class="summary-main">
+          <div class="action-icon action-icon-success">
+            <i class="ti ti-report-analytics" aria-hidden="true"></i>
+          </div>
+          <div class="summary-copy">
+            <strong>View Records</strong>
+            <div>Search and export data</div>
+          </div>
+        </div>
+        <i class="ti ti-chevron-right summary-arrow" aria-hidden="true"></i>
+      </a>
+      
+      <a href="{{ url_for('test_recognition_page') }}" class="summary-item action-card">
+        <div class="summary-main">
+          <div class="action-icon action-icon-warning">
+            <i class="ti ti-face-id" aria-hidden="true"></i>
+          </div>
+          <div class="summary-copy">
+            <strong>Face Recognition</strong>
+            <div>Test camera and recognition</div>
+          </div>
+        </div>
+        <i class="ti ti-chevron-right summary-arrow" aria-hidden="true"></i>
+      </a>
+    </div>
+    
+    <div class="shortcut-panel">
+      <div class="shortcut-title">
+        <i class="ti ti-keyboard" aria-hidden="true"></i>
+        Keyboard Shortcuts
+      </div>
+      <ul>
+        <li>
+          <span>Dashboard</span>
+          <span class="shortcut-key">Alt+D</span>
+        </li>
+        <li>
+          <span>Mark Attendance</span>
+          <span class="shortcut-key">Alt+A</span>
+        </li>
+        <li>
+          <span>View Records</span>
+          <span class="shortcut-key">Alt+R</span>
+        </li>
+        <li>
+          <span>Face Recognition</span>
+          <span class="shortcut-key">Alt+F</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{
+    "1": {
+        "name": "John Smith",
+        "registered_date": "2026-05-25T20:09:32.123703"
+    },
+    "2": {
+        "name": "Sarah Johnson",
+        "registered_date": "2026-05-25T20:09:32.123703"
+    },
+    "3": {
+        "name": "Michael Chen",
+        "registered_date": "2026-05-25T20:09:32.123703"
+    },
+    "4": {
+        "name": "Emily Davis",
+        "registered_date": "2026-05-25T20:09:32.123703"
+    },
+    "5": {
+        "name": "James Wilson",
+        "registered_date": "2026-05-25T20:09:32.123703"
+    }
+}
