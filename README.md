@@ -98,6 +98,8 @@ python capture_faces.py
 
 **Output:** Student face images saved in `photos/` folder
 
+##03241021-I have contributed this part
+
 ### Step 2️⃣: Train the Recognition Model
 ```bash
 python train_model.py
@@ -527,8 +529,12 @@ For issues or questions:
 
 ---
 
-**Happy Attending! 🎓📸**#   A I - S m a r t - A t t e n d a n c e - S y s t e m  
- #   A I - S m a r t - A t t e n d a n c e - S y s t e m  
- #   A I - F a c e - A t t e n d a n c e - S y s t e m -  
- #   A I - F a c e - A t t e n d a n c e - S y s t e m -  
+**Happy Attending! 🎓📸**#   A I - S m a r t - A t t e n d a n c e - S y s t e m 
+ 
+ #   A I - S m a r t - A t t e n d a n c e - S y s t e m 
+ 
+ #   A I - F a c e - A t t e n d a n c e - S y s t e m - 
+ 
+ #   A I - F a c e - A t t e n d a n c e - S y s t e m - 
+ 
  
