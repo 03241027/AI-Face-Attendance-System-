@@ -98,8 +98,7 @@ python capture_faces.py
 
 **Output:** Student face images saved in `photos/` folder
 
-
-
+##03241021-I have contributed this part
 ### Step 2️⃣: Train the Recognition Model
 ```bash
 python train_model.py
